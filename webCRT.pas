@@ -12,12 +12,15 @@ unit webCRT;
 # Release note:
   - v.1.0: - On 4 Sep 2016.
            - First public release, without any documentation.
+  - v.1.1: - On 14 Feb 2018.
+           - Added new webWriteLine() procedure.
+           - Some minor bug fixes.
 # Author:
   - Nickname : Mr. Bee Jay
   - Facebook : /pak.lebah
   - Twitter  : @pak_lebah
   - Tumblr   : paklebah
-  - Email    : pak․lebah＠yahoo․com
+  - Email    : pak dot lebah at yahoo dot com
   - Website  : pak.lebah.web.id (for my personal coding research)
  *****************************************************************************)
 
@@ -83,6 +86,7 @@ procedure WebButtonAction(var clicked: boolean; const caption: string; const act
 // additional web output
 procedure WebWriteVar(const key, value: string); inline;
 procedure WebWriteBlock(const txt: string); inline;
+procedure WebWriteLine(const space: integer = 0; const width: integer = 50); inline;
 procedure WebPutGlyph(const gName: string; const caption: string = ''; const newLine: boolean = false); inline;
 function  WebGetGlyph(const gName: string; const caption: string = ''; const asTitle: boolean = false): string; inline;
 function  WebGetLink(const url: string; const caption: string = ''; const newPage: boolean = false): string; inline;
@@ -113,9 +117,9 @@ function HTMLDecode(const txt: string): string;
 function HTMLEncode(const txt: string): string;
 
 // convertion methods
-function Int2Str(const i: integer; const w: integer = 0): string; inline;
-function Int2Str(const i: int64; const w: integer = 0): string; inline;
-function Float2Str(const f: double; const l: integer = 0; const d: integer = 0): string; inline;
+function Int2Str(const i: integer): string; inline;
+function Int2Str(const i: int64): string; inline;
+function Float2Str(const f: double): string; inline;
 function Bool2Str(const b: boolean): string; inline;
 function Str2Int(const s: string): integer; inline;
 function Str2Int(const s: string): int64; inline;
@@ -131,9 +135,6 @@ function switch(const condition: boolean; const intTrue, intFalse: integer): int
 function switch(const condition: boolean; const intTrue, intFalse: int64): int64; inline;
 function switch(const condition: boolean; const realTrue, realFalse: double): double; inline;
 function switch(const condition: boolean; const boolTrue, boolFalse: boolean): boolean; inline;
-
-function getItemAt(const aText: string; const aIndex: integer; aDelim: string = ';'): string;
-function getItemCount(const aText: string; aDelim: string = ';'): integer;
 
 implementation
 
@@ -177,7 +178,7 @@ begin
     else
     begin
       pa := pb+1;                 // a delimiter found NOT at the index, get along
-      if pa > l then pa := 0;     // iterator reaches the end of the text, stop it 
+      if pa >= l then pa := 0;    // iterator reaches the end of the text, stop it 
     end;
   end;
 end;
@@ -386,7 +387,7 @@ begin
       writeln('  <form method="post" action="',ExeName,'"><p>')
     else
       writeln('  <form method="get" action="',ExeName,'"><p>');
-    writeln('  <!-- ***** begin of user code ***** -->');
+    writeln('  <!-- ***** begin of user code ***** --!>');
   end;
 end;
 
@@ -397,10 +398,10 @@ begin
   begin
     writeln('</p><hr/>');
     // submit button if there's any input element
-    if InputCount > 0 then writeln('<input type="submit" value=" SUBMIT "/>');
+    if InputCount > 0 then write('<input type="submit" value=" SUBMIT "/>');
     // custom user's footer
     if footer <> '' then writeln(footer);
-    writeln('  <!-- end of user code -->');
+    writeln('  <!-- end of user code --!>');
     writeln('  </form>');
   end
   // custom form footer
@@ -409,7 +410,7 @@ begin
     if footer <> '' then writeln(footer);
     writeln('</p><hr/>');
     // form footer
-    writeln('  <!-- ***** end of user code ***** -->');
+    writeln('  <!-- ***** end of user code ***** --!>');
     writeln('  </form>');
   end;
   // credit footer
@@ -864,6 +865,11 @@ begin
   writeln('<blockquote>',txt,'</blockquote>');
 end;
 
+procedure WebWriteLine(const space: integer = 0; const width: integer = 50);
+begin
+  writeln('<hr align="left" width="'+IntToStr(width)+'%" style="margin:10px 10px 10px '+IntToStr(space)+'px" />');
+end;
+
 // Support BootStrap's glyphicon library. Make sure the css and font are installed correctly.
 procedure WebPutGlyph(const gName: string; const caption: string = ''; const newLine: boolean = false);
 begin
@@ -1138,19 +1144,20 @@ end;
 
 { // type conversion }
 
-function Int2Str(const i: integer; const w: integer = 0): string;
+function Int2Str(const i: integer): string;
 begin
-  if w = 0 then Str(i,Result) else Str(i:w,Result);
+  Str(i,Result);
 end;
 
-function Int2Str(const i: int64; const w: integer = 0): string;
+function Int2Str(const i: int64): string;
 begin
-  if w = 0 then Str(i,Result) else Str(i:w,Result);
+  Str(i,Result);
 end;
 
-function Float2Str(const f: double; const l: integer = 0; const d: integer = 0): string;
+function Float2Str(const f: double): string;
 begin
-  if (l > 0) or (d > 0) then Str(f:l:d,Result) else Result := FloatToStr(f); // Str(f,Result);
+  //Str(f:0:2,Result);
+  Result := FloatToStr(f);
 end;
 
 function Bool2Str(const b: boolean): string;
@@ -1175,10 +1182,12 @@ begin
 end;
 
 function Str2Float(const s: string): double;
-var c: integer;
+//var
+  //c: integer;
 begin
-  Val(s,Result,c);
-  if c <> 0 then Result := 0;
+  //Val(s,Result,c);
+  //if c <> 0 then Result := 0;
+  Result := StrToFloat(s);
 end;
 
 function Str2Bool(s: string): boolean;
